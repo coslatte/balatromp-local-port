@@ -1,0 +1,82 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">Balatro Bridge</string>
+    <string name="title">Balatro Native Bridge</string>
+
+    <!-- Access -->
+    <string name="access_method">Access: %1$s</string>
+    <string name="access_saf">SAF</string>
+    <string name="access_direct">Direct</string>
+    <string name="access_shizuku">Shizuku</string>
+    <string name="access_none">No access</string>
+
+    <!-- Folder selection -->
+    <string name="btn_select_folder">Select Balatro Game Folder</string>
+    <string name="folder_hint">Path: Android/data/com.playstack.balatro.android/files/save/game/</string>
+    <string name="btn_grant_full">Or grant full storage access</string>
+    <string name="hint_grant_desc">Skip folder selection (requires special permission)</string>
+    <string name="btn_grant_shizuku">Or use Shizuku (recommended)</string>
+    <string name="hint_shizuku_desc">Direct Android/data access without restrictions</string>
+
+    <!-- Modes -->
+    <string name="radio_host">Host mode</string>
+    <string name="radio_client">Client mode</string>
+    <string name="label_host_ip">Host IP address</string>
+    <string name="label_local_ip">Your local IP: %1$s</string>
+
+    <!-- Actions -->
+    <string name="btn_host_play">Host &amp; Play</string>
+    <string name="btn_join_play">Join &amp; Play</string>
+    <string name="btn_change_folder">Change folder</string>
+    <string name="btn_grant_storage">Grant access</string>
+    <string name="btn_shizuku_setup">Setup Shizuku</string>
+
+    <!-- Messages -->
+    <string name="error_invalid_ip">Invalid IP address</string>
+    <string name="error_config_failed">Failed to update Multiplayer.jkr</string>
+    <string name="error_balatro_not_found">Balatro not found!</string>
+    <string name="toast_storage_granted">Access granted</string>
+    <string name="toast_shizuku_granted">Shizuku permission granted</string>
+    <string name="toast_shizuku_denied">Shizuku permission denied</string>
+    <string name="toast_shizuku_not_running">Shizuku is not running. Open it and start it.</string>
+
+    <!-- Dialog manual fallback -->
+    <string name="dialog_manual_title">Manual Setup Required</string>
+    <string name="dialog_manual_msg">Automatic access to the game folder failed.</string>
+    <string name="option_a_title">Option A: grant full storage access</string>
+    <string name="option_a_desc">Settings &gt; Apps &gt; Balatro Bridge &gt; Permissions &gt; Files &gt; Allow</string>
+    <string name="option_b_title">Option B: use Shizuku (recommended)</string>
+    <string name="option_b_desc">Install Shizuku from Play Store, enable wireless debugging and grant permission.</string>
+    <string name="option_c_title">Option C: use ADB from PC</string>
+    <string name="option_c_desc">Connect your phone and run:\n adb push Multiplayer.jkr /sdcard/Android/data/com.playstack.balatro.android/files/save/game/</string>
+    <string name="server_url_value"> [\"server_url\"] = \"%1$s\"</string>
+    <string name="btn_grant">Allow access</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_help">Help</string>
+    <string name="btn_manual">Guide</string>
+    <string name="btn_copy">Copy</string>
+    <string name="copied">Copied</string>
+    <string name="server_running">Server running at %1$s</string>
+    <string name="server_stopped">Server stopped</string>
+    <string name="how_it_works">How it works</string>
+
+    <!-- Manual -->
+    <string name="manual_what_title">What this app does</string>
+    <string name="manual_what_desc">Replaces Termux + Node.js. Starts a native Ktor server on your phone (port 8788) and automatically writes the IP into Multiplayer.jkr so Balatro connects over LAN without editing files manually.</string>
+    <string name="manual_flow_title">Host / Client flow</string>
+    <string name="manual_flow_host_title">Host</string>
+    <string name="manual_flow_host_desc">1) Enable hotspot on this phone. 2) Tap “Host &amp; Play” → starts server, injects http://YOUR_IP:8788 into Multiplayer.jkr and launches Balatro. 3) Inside Balatro Multiplayer create the lobby.</string>
+    <string name="manual_flow_client_title">Client</string>
+    <string name="manual_flow_client_desc">1) Connect to the host hotspot. 2) Enter host IP (e.g. 10.2.0.2) and tap “Join &amp; Play”. 3) Same URL is injected and Balatro launches. 4) In Balatro join the host lobby.</string>
+    <string name="manual_ip_title">Is 10.2.0.2 correct?</string>
+    <string name="manual_ip_desc">Yes. It is your ap0 (hotspot) interface IP. If this phone creates the hotspot and the other phone connects to it, put 10.2.0.2 in client mode. Both need the same multiplayer mod. Then in-game host creates lobby and client joins via room code.</string>
+    <string name="manual_network_title">Network requirements</string>
+    <string name="manual_network_desc">Same LAN/hotspot, same Balatro mod version, port 8788 free, and folder access granted (Shizuku recommended).</string>
+    <string name="manual_shizuku_title">Why Shizuku?</string>
+    <string name="manual_shizuku_desc">Android 11+ blocks Android/data. Shizuku grants ADB-level access without root. Once set up (install Shizuku, enable wireless debugging and authorize), the app writes Multiplayer.jkr without folder picker.</string>
+    <string name="manual_trouble_title">Common issues</string>
+    <string name="manual_trouble_desc">If it does not connect: check same network, correct IP (see “Your local IP”), host tapped first, port 8788 not blocked and same mod on both phones.</string>
+    <string name="manual_close">Got it</string>
+    <string name="credit">Created by Gabriel Paz</string>
+    <string name="credit_github_desc">Open creator GitHub</string>
+</resources>

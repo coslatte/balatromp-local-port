@@ -11,8 +11,8 @@ android {
         applicationId = "com.balatromp.nativebridge"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,7 +51,6 @@ android {
 
 dependencies {
     val ktor_version = "2.3.7"
-    val compose_version = "1.5.4"
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
@@ -70,8 +69,12 @@ dependencies {
     // Foreground Service
     implementation("androidx.lifecycle:lifecycle-service:2.7.0")
 
-    // SAF DocumentFile access (ConfigManager)
+    // SAF DocumentFile access
     implementation("androidx.documentfile:documentfile:1.0.1")
+
+    // Shizuku (ADB-level file access for Android/data)
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
