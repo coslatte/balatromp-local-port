@@ -1,7 +1,11 @@
 package com.balatromp.nativebridge
 
+import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -15,10 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.balatromp.nativebridge.service.MultiplayerService
 import com.balatromp.nativebridge.ui.theme.BalatroNativeBridgeTheme
 import com.balatromp.nativebridge.util.ConfigManager
 import com.balatromp.nativebridge.util.NetworkUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,9 +47,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
-    var selectedUri by remember { mutableStateOf<Uri?>(null) }
+    val scope = rememberCoroutineScope()
+    val prefs = remember { context.getSharedPreferences("balatro_bridge", Context.MODE_PRIVATE) }
+
+    var selectedUri by remember {
+        mutableStateOf(prefs.getString("game_folder_uri", null)?.let { Uri.parse(it) })
+    }
     var hostIp by remember { mutableStateOf("") }
     var isHostMode by remember { mutableStateOf(true) }
+    var isBusy by remember { mutableStateOf(false) }
 
     val folderLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
@@ -51,7 +65,21 @@ fun MainScreen() {
                 uri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
+            prefs.edit().putString("game_folder_uri", uri.toString()).apply()
             selectedUri = uri
+        }
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
+
+    fun ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
@@ -99,28 +127,48 @@ fun MainScreen() {
 
             Button(
                 onClick = {
-                    val targetIp = if (isHostMode) NetworkUtils.getLocalIpAddress(context) else hostIp
-                    if (targetIp == null || targetIp == "Unknown") {
+                    val targetIp = if (isHostMode) NetworkUtils.getLocalIpAddress(context) else hostIp.ifBlank { null }
+                    if (targetIp == null) {
                         Toast.makeText(context, "Invalid IP Address", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 
                     if (isHostMode) {
-                        context.startService(Intent(context, MultiplayerService::class.java))
+                        ensureNotificationPermission()
+                        ContextCompat.startForegroundService(context, Intent(context, MultiplayerService::class.java))
                     }
 
                     val serverUrl = "http://$targetIp:8788"
-                    val success = ConfigManager.injectServerUrl(context, selectedUri!!, serverUrl)
-
-                    if (success) {
-                        launchBalatro(context)
-                    } else {
-                        Toast.makeText(context, "Failed to update Multiplayer.jkr", Toast.LENGTH_SHORT).show()
+                    isBusy = true
+                    scope.launch {
+                        val success = withContext(Dispatchers.IO) {
+                            ConfigManager.injectServerUrl(context, selectedUri!!, serverUrl)
+                        }
+                        isBusy = false
+                        if (success) {
+                            launchBalatro(context)
+                        } else {
+                            Toast.makeText(context, "Failed to update Multiplayer.jkr", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 },
+                enabled = !isBusy && (isHostMode || hostIp.isNotBlank()),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                if (isBusy) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 Text(if (isHostMode) "Host & Play" else "Join & Play")
+            }
+
+            TextButton(
+                onClick = {
+                    prefs.edit().remove("game_folder_uri").apply()
+                    selectedUri = null
+                }
+            ) {
+                Text("Change folder", style = MaterialTheme.typography.bodySmall)
             }
         }
     }
