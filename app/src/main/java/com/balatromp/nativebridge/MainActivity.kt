@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +36,7 @@ import androidx.core.content.ContextCompat
 import com.balatromp.nativebridge.service.MultiplayerService
 import com.balatromp.nativebridge.ui.theme.BalatroNativeBridgeTheme
 import com.balatromp.nativebridge.util.ConfigManager
+import com.balatromp.nativebridge.util.ModManager
 import com.balatromp.nativebridge.util.NetworkUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,6 +70,9 @@ fun MainScreen() {
     var adbInstructions by remember { mutableStateOf("") }
     var accessMethod by remember { mutableStateOf(prefs.getString("access_method", "saf") ?: "saf") }
     var shizukuPermissionGranted by remember { mutableStateOf(ConfigManager.hasShizukuPermission()) }
+    var showDetails by remember { mutableStateOf(false) }
+    var modsFolderUri by remember { mutableStateOf(prefs.getString("balatro_mods_uri", null)?.let { Uri.parse(it) }) }
+    var modsBusy by remember { mutableStateOf<String?>(null) }
 
     DisposableEffect(Unit) {
         val listener = Shizuku.OnRequestPermissionResultListener { _, grantResult ->
@@ -98,6 +103,13 @@ fun MainScreen() {
             accessMethod = "direct"
             prefs.edit().putString("access_method", "direct").apply()
             Toast.makeText(context, context.getString(R.string.toast_storage_granted), Toast.LENGTH_SHORT).show()
+        }
+    }
+    val modsFolderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            prefs.edit().putString("balatro_mods_uri", uri.toString()).apply()
+            modsFolderUri = uri
         }
     }
 
@@ -151,18 +163,28 @@ fun MainScreen() {
 
     val localIp = remember { NetworkUtils.getLocalIpAddress(context) }
     val hasAnyAccess = selectedUri != null || accessMethod == "direct" || (accessMethod == "shizuku" && shizukuPermissionGranted)
+    var isVerified by remember { mutableStateOf<Boolean?>(null) }
+    var checking by remember { mutableStateOf(false) }
+    LaunchedEffect(hasAnyAccess, accessMethod, selectedUri, shizukuPermissionGranted) {
+        if (!hasAnyAccess) { isVerified = null; checking = false; return@LaunchedEffect }
+        checking = true
+        isVerified = withContext(Dispatchers.IO) {
+            ConfigManager.isConfigReady(context, selectedUri, accessMethod)
+        }
+        checking = false
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold, fontSize = 18.sp) },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = Color.Black,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
                 ),
                 actions = {
-                    TextButton(onClick = { showManual = true }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary)) {
+                    TextButton(onClick = { showManual = true }, colors = ButtonDefaults.textButtonColors(contentColor = Color.White)) {
                         Text(stringResource(R.string.btn_help))
                     }
                 }
@@ -187,23 +209,67 @@ fun MainScreen() {
             }
             Spacer(Modifier.height(16.dp))
 
-            // Status card
-            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+            // Status card - simple, con validación real
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                 Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    val dot = if (hasAnyAccess) "●" else "○"
-                    val dotColor = if (hasAnyAccess) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                    val dotColor = when {
+                        !hasAnyAccess -> MaterialTheme.colorScheme.outline
+                        checking -> MaterialTheme.colorScheme.outline
+                        isVerified == true -> Color(0xFF2E7D32)
+                        else -> Color(0xFFC62828)
+                    }
+                    val dot = when {
+                        !hasAnyAccess -> "○"
+                        checking -> "◌"
+                        else -> "●"
+                    }
                     Text(dot, color = dotColor, fontSize = 14.sp, modifier = Modifier.padding(end = 8.dp))
                     Column(Modifier.weight(1f)) {
-                        val label = when (accessMethod) {
+                        Text(
+                            when {
+                                !hasAnyAccess -> stringResource(R.string.dialog_manual_msg)
+                                checking -> stringResource(R.string.details_checking)
+                                isVerified == true -> stringResource(R.string.details_ok) + " — " + stringResource(R.string.details_verified)
+                                else -> stringResource(R.string.details_ok) + " — " + stringResource(R.string.details_not_verified)
+                            },
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (showDetails) {
+                            val label = when (accessMethod) {
+                                "direct" -> stringResource(R.string.access_direct)
+                                "shizuku" -> stringResource(R.string.access_shizuku)
+                                else -> if (selectedUri != null) stringResource(R.string.access_saf) else stringResource(R.string.access_none)
+                            }
+                            Text(stringResource(R.string.details_access, label), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                        }
+                    }
+                    TextButton(onClick = { showDetails = !showDetails }) {
+                        Text(if (showDetails) stringResource(R.string.btn_details_hide) else stringResource(R.string.btn_details_show), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+            }
+            if (showDetails) {
+                Spacer(Modifier.height(10.dp))
+                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(stringResource(R.string.details_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        val accessLabel = when (accessMethod) {
                             "direct" -> stringResource(R.string.access_direct)
                             "shizuku" -> stringResource(R.string.access_shizuku)
                             else -> if (selectedUri != null) stringResource(R.string.access_saf) else stringResource(R.string.access_none)
                         }
-                        Text(stringResource(R.string.access_method, label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                        Text(
-                            if (hasAnyAccess) stringResource(R.string.server_stopped) else stringResource(R.string.dialog_manual_msg),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                        )
+                        Text(stringResource(R.string.details_access, accessLabel), style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                        Text(stringResource(R.string.details_ip, localIp ?: stringResource(R.string.details_no)), style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                        Text(stringResource(R.string.details_server, if (localIp != null) "http://$localIp:8788" else stringResource(R.string.details_inactive)), style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                        val shizukuState = when {
+                            !ConfigManager.isShizukuAvailable() -> stringResource(R.string.details_no)
+                            ConfigManager.hasShizukuPermission() -> stringResource(R.string.details_granted)
+                            else -> stringResource(R.string.details_denied)
+                        }
+                        Text(stringResource(R.string.details_shizuku, shizukuState), style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                        val storageState = if (ConfigManager.hasStorageManagerPermission()) stringResource(R.string.details_granted) else stringResource(R.string.details_denied)
+                        Text(stringResource(R.string.details_storage, storageState), style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                        Text(stringResource(R.string.details_config, ConfigManager.getBalatroGameDir().absolutePath + "/Multiplayer.jkr"), style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
                     }
                 }
             }
@@ -311,6 +377,97 @@ fun MainScreen() {
                 }
             }
 
+            // ── Mods ───────────────────────────────────────────────────
+            Spacer(Modifier.height(20.dp))
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(stringResource(R.string.mods_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(4.dp))
+                    Text(stringResource(R.string.mods_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(6.dp))
+                    Text(stringResource(R.string.mods_how), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.mods_folder_label), style = MaterialTheme.typography.labelMedium)
+                                Text(if (modsFolderUri != null) modsFolderUri.toString().substringAfterLast("%3A").substringAfterLast("/") else stringResource(R.string.mods_not_selected), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.mods_external_path), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Button(onClick = { modsFolderLauncher.launch(null) }) { Text(stringResource(R.string.mods_choose)) }
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        Button(
+                            onClick = {
+                                modsBusy = "all"
+                                scope.launch {
+                                    val ok = withContext(Dispatchers.IO) {
+                                        var allOk = true
+                                        for (mod in ModManager.embeddedMods) {
+                                            val res = when {
+                                                modsFolderUri != null -> ModManager.installViaSaf(context, modsFolderUri!!, mod)
+                                                ConfigManager.isShizukuAvailable() && ConfigManager.hasShizukuPermission() -> ModManager.installViaShizuku(context, mod)
+                                                ConfigManager.hasStorageManagerPermission() -> ModManager.installViaDirect(context, mod)
+                                                else -> false
+                                            }
+                                            if (!res) allOk = false
+                                        }
+                                        allOk
+                                    }
+                                    modsBusy = null
+                                    Toast.makeText(context, if (ok) context.getString(R.string.mods_install_success) else context.getString(R.string.mods_install_failed), Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            enabled = modsBusy == null,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            if (modsBusy == "all") CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                            else Text(stringResource(R.string.mods_install_all))
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    for (mod in ModManager.embeddedMods) {
+                        val isInstalling = modsBusy == mod.id
+                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(mod.displayName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                                    Text(mod.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                Button(
+                                    onClick = {
+                                        modsBusy = mod.id
+                                        scope.launch {
+                                            val ok = withContext(Dispatchers.IO) {
+                                                when {
+                                                    modsFolderUri != null -> ModManager.installViaSaf(context, modsFolderUri!!, mod)
+                                                    ConfigManager.isShizukuAvailable() && ConfigManager.hasShizukuPermission() -> ModManager.installViaShizuku(context, mod)
+                                                    ConfigManager.hasStorageManagerPermission() -> ModManager.installViaDirect(context, mod)
+                                                    else -> false
+                                                }
+                                            }
+                                            modsBusy = null
+                                            Toast.makeText(context, if (ok) mod.displayName + " " + context.getString(R.string.mods_installed) else context.getString(R.string.mods_install_failed), Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    enabled = modsBusy == null
+                                ) {
+                                    if (isInstalling) CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
+                                    else Text(stringResource(R.string.mods_install))
+                                }
+                            }
+                        }
+                    }
+                    if (showDetails) {
+                        Spacer(Modifier.height(8.dp))
+                        Text("Assets: mods/smods, BalatroMultiplayer.zip, SilkTouch.zip — destino: ${ModManager.getExternalModsDir().absolutePath}", style = MaterialTheme.typography.bodySmall, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+
             Spacer(Modifier.height(28.dp))
             Divider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.height(12.dp))
@@ -334,23 +491,18 @@ fun MainScreen() {
         }
     }
 
-    // Manual bottom sheet dialog
     if (showManual) {
         AlertDialog(
             onDismissRequest = { showManual = false },
             title = { Text(stringResource(R.string.how_it_works)) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    ManualSection(stringResource(R.string.manual_what_title), stringResource(R.string.manual_what_desc))
-                    ManualSection(stringResource(R.string.manual_ip_title), stringResource(R.string.manual_ip_desc))
-                    ManualSection(stringResource(R.string.manual_flow_title), "")
-                    Text("▸ " + stringResource(R.string.manual_flow_host_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                    Text(stringResource(R.string.manual_flow_host_desc), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp, bottom = 10.dp))
-                    Text("▸ " + stringResource(R.string.manual_flow_client_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                    Text(stringResource(R.string.manual_flow_client_desc), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp, bottom = 10.dp))
-                    ManualSection(stringResource(R.string.manual_network_title), stringResource(R.string.manual_network_desc))
-                    ManualSection(stringResource(R.string.manual_shizuku_title), stringResource(R.string.manual_shizuku_desc))
-                    ManualSection(stringResource(R.string.manual_trouble_title), stringResource(R.string.manual_trouble_desc))
+                    DropdownSection(stringResource(R.string.manual_what_title), stringResource(R.string.manual_what_desc))
+                    DropdownSection(stringResource(R.string.manual_flow_title), stringResource(R.string.manual_flow_host_title) + ": " + stringResource(R.string.manual_flow_host_desc) + "\n\n" + stringResource(R.string.manual_flow_client_title) + ": " + stringResource(R.string.manual_flow_client_desc))
+                    DropdownSection(stringResource(R.string.manual_ip_title), stringResource(R.string.manual_ip_desc))
+                    DropdownSection(stringResource(R.string.manual_network_title), stringResource(R.string.manual_network_desc))
+                    DropdownSection(stringResource(R.string.manual_shizuku_title), stringResource(R.string.manual_shizuku_desc))
+                    DropdownSection(stringResource(R.string.manual_trouble_title), stringResource(R.string.manual_trouble_desc))
                 }
             },
             confirmButton = { TextButton(onClick = { showManual = false }) { Text(stringResource(R.string.manual_close)) } }
@@ -391,9 +543,20 @@ fun MainScreen() {
 }
 
 @Composable
-private fun ManualSection(title: String, desc: String) {
-    if (title.isNotEmpty()) Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 12.dp))
-    if (desc.isNotEmpty()) Text(desc, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
+private fun DropdownSection(title: String, desc: String) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(vertical = 6.dp)
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f))
+            Text(if (expanded) "▲" else "▼", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (expanded) {
+            Text(desc, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
+            Divider(modifier = Modifier.padding(top = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        }
+    }
 }
 
 fun launchBalatro(context: Context) {

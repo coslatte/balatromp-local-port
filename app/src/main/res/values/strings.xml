@@ -1,7 +1,7 @@
 <resources>
     <!-- App -->
-    <string name="app_name">Balatro Bridge</string>
-    <string name="title">Balatro Native Bridge</string>
+    <string name="app_name">Balatro Port</string>
+    <string name="title">Balatro Port</string>
 
     <!-- Access -->
     <string name="access_method">Acceso: %1$s</string>
@@ -11,12 +11,12 @@
     <string name="access_none">Sin acceso</string>
 
     <!-- Folder selection -->
-    <string name="btn_select_folder">Seleccionar carpeta del juego Balatro</string>
-    <string name="folder_hint">Ruta: Android/data/com.playstack.balatro.android/files/save/game/</string>
-    <string name="btn_grant_full">O conceder acceso total al almacenamiento</string>
-    <string name="hint_grant_desc">Evita seleccionar carpeta (requiere permiso especial)</string>
-    <string name="btn_grant_shizuku">O usar Shizuku (recomendado)</string>
-    <string name="hint_shizuku_desc">Acceso directo a Android/data sin restricciones</string>
+    <string name="btn_select_folder">Elegir carpeta del juego</string>
+    <string name="folder_hint">Solo la primera vez — se guarda para siempre</string>
+    <string name="btn_grant_full">Dar acceso total</string>
+    <string name="hint_grant_desc">Sin buscar carpetas</string>
+    <string name="btn_grant_shizuku">Usar Shizuku (recomendado)</string>
+    <string name="hint_shizuku_desc">La forma más fácil — sin buscar carpetas</string>
 
     <!-- Modes -->
     <string name="radio_host">Modo anfitrión</string>
@@ -60,23 +60,56 @@
     <string name="server_stopped">Servidor detenido</string>
     <string name="how_it_works">Cómo funciona</string>
 
-    <!-- Manual -->
-    <string name="manual_what_title">Qué hace esta app</string>
-    <string name="manual_what_desc">Reemplaza Termux + Node.js. Inicia un servidor Ktor nativo en tu móvil (puerto 8788) y escribe automáticamente la IP en Multiplayer.jkr para que Balatro se conecte en LAN, sin editar archivos a mano.</string>
-    <string name="manual_flow_title">Flujo Host / Cliente</string>
-    <string name="manual_flow_host_title">Anfitrión (Host)</string>
-    <string name="manual_flow_host_desc">1) Activa hotspot en este móvil. 2) Pulsa “Crear y jugar” → inicia servidor, inyecta http://TU_IP:8788 en Multiplayer.jkr y lanza Balatro. 3) Dentro de Balatro Multiplayer crea la sala.</string>
-    <string name="manual_flow_client_title">Cliente</string>
-    <string name="manual_flow_client_desc">1) Conéctate al hotspot del anfitrión. 2) Escribe la IP del anfitrión (ej. 10.2.0.2) y pulsa “Unirse y jugar”. 3) Se inyecta la misma URL y se lanza Balatro. 4) En Balatro únete a la sala del host.</string>
-    <string name="manual_ip_title">¿10.2.0.2 es correcto?</string>
-    <string name="manual_ip_desc">Sí. Es la IP de tu interfaz ap0 (hotspot). Si este móvil crea el hotspot y el otro se conecta a él, debe poner 10.2.0.2 en modo cliente. Ambos necesitan el mismo mod de multiplayer. Luego dentro del juego el host crea lobby y el cliente se une por código de sala.</string>
-    <string name="manual_network_title">Requisitos de red</string>
-    <string name="manual_network_desc">Misma LAN/hotspot, mismo mod y versión de Balatro, puerto 8788 libre, y acceso a la carpeta concedido (Shizuku recomendado).</string>
-    <string name="manual_shizuku_title">¿Por qué Shizuku?</string>
-    <string name="manual_shizuku_desc">Android 11+ bloquea Android/data. Shizuku da acceso con privilegio ADB sin root. Tras configurarlo una vez (instalar Shizuku, activar depuración inalámbrica y autorizar), la app escribe Multiplayer.jkr sin pedir carpeta.</string>
-    <string name="manual_trouble_title">Problemas comunes</string>
-    <string name="manual_trouble_desc">Si no conecta: verifica misma red, IP correcta (mira “Tu IP local”), que el anfitrión haya pulsado primero, puerto 8788 no bloqueado y mismo mod en ambos móviles.</string>
+    <!-- Manual - directo y coloquial -->
+    <string name="manual_what_title">¿Qué hace?</string>
+    <string name="manual_what_desc">Juega Balatro con amigos sin Termux. La app levanta el servidor y configura Multiplayer.jkr por ti. Tú solo eliges crear o unirte.</string>
+    <string name="manual_flow_title">Cómo se juega</string>
+    <string name="manual_flow_host_title">Tú creas la partida</string>
+    <string name="manual_flow_host_desc">Hotspot en este móvil → “Crear y jugar” → Balatro → crea sala.</string>
+    <string name="manual_flow_client_title">Te unes a un amigo</string>
+    <string name="manual_flow_client_desc">Conéctate a su hotspot → pon su IP (ej. 10.2.0.2) → “Unirse y jugar” → únete a su sala en Balatro.</string>
+    <string name="manual_ip_title">¿10.2.0.2 es normal?</string>
+    <string name="manual_ip_desc">Sí. Es la IP del hotspot. La copias tal cual en el móvil del amigo.</string>
+    <string name="manual_network_title">Qué necesitas</string>
+    <string name="manual_network_desc">Misma red y mismo mod en los dos móviles. Nada más.</string>
+    <string name="manual_shizuku_title">¿Shizuku?</string>
+    <string name="manual_shizuku_desc">Permiso para tocar Android/data. Se configura una vez en 1 min y te olvidas.</string>
+    <string name="manual_trouble_title">¿No conecta?</string>
+    <string name="manual_trouble_desc">Misma red, misma IP, host primero, mismo mod. Si falla, revisa detalles técnicos.</string>
     <string name="manual_close">Entendido</string>
     <string name="credit">Creado por Gabriel Paz</string>
     <string name="credit_github_desc">Abrir GitHub del creador</string>
+    <!-- Mods -->
+    <string name="mods_title">Mods incluidos</string>
+    <string name="mods_desc">Instala Steamodded, Multiplayer y SilkTouch directo a la carpeta del juego. Sigue los pasos de https://docs.smods.dev</string>
+    <string name="mods_folder_label">Carpeta Balatro (externa)</string>
+    <string name="mods_folder_hint">Balatro/ASET/Mods — se crea al instalar vía Lovely</string>
+    <string name="mods_not_selected">No seleccionada</string>
+    <string name="mods_choose">Elegir carpeta Balatro</string>
+    <string name="mods_install">Instalar</string>
+    <string name="mods_install_all">Instalar todos</string>
+    <string name="mods_installed">Instalado</string>
+    <string name="mods_not_installed">No instalado</string>
+    <string name="mods_install_success">Instalado correctamente</string>
+    <string name="mods_install_failed">Error al instalar</string>
+    <string name="mods_external_path">Ruta externa: Balatro/ASET/Mods</string>
+    <string name="mods_how">Cómo: añade almacenamiento externo Balatro en tu explorador y elige esa carpeta aquí. La app creará ASET/Mods y copiará los mods.</string>
+    <string name="btn_details_show">Ver detalles técnicos</string>
+    <string name="btn_details_hide">Ocultar detalles</string>
+    <string name="details_title">Detalles técnicos</string>
+    <string name="details_access">Acceso: %1$s</string>
+    <string name="details_ip">IP local: %1$s</string>
+    <string name="details_server">Servidor: %1$s</string>
+    <string name="details_shizuku">Shizuku: %1$s</string>
+    <string name="details_storage">Almacenamiento: %1$s</string>
+    <string name="details_config">Archivo: %1$s</string>
+    <string name="details_ok">Listo</string>
+    <string name="details_no">No disponible</string>
+    <string name="details_granted">Concedido</string>
+    <string name="details_denied">Denegado</string>
+    <string name="details_active">Activo</string>
+    <string name="details_inactive">Inactivo</string>
+    <string name="details_verified">Verificado — archivo encontrado</string>
+    <string name="details_not_verified">Acceso concedido, pero no se encontró Multiplayer.jkr. Abre Balatro una vez para que se cree.</string>
+    <string name="details_checking">Verificando…</string>
 </resources>

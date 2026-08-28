@@ -131,6 +131,30 @@ object ConfigManager {
         """.trimMargin()
     }
 
+    // ── Validation ─────────────────────────────────────────────────────
+    fun isSafFileExists(context: Context, directoryUri: Uri): Boolean {
+        return try {
+            val root = DocumentFile.fromTreeUri(context, directoryUri) ?: return false
+            root.findFile(FILE_NAME)?.exists() == true
+        } catch (_: Exception) { false }
+    }
+    fun isDirectFileExists(): Boolean = File(getBalatroGameDir(), FILE_NAME).exists()
+    fun isShizukuFileExists(): Boolean {
+        if (!isShizukuAvailable() || !hasShizukuPermission()) return false
+        return try {
+            val p = shizukuNewProcess(arrayOf("sh", "-c", "test -f \"${File(getBalatroGameDir(), FILE_NAME).absolutePath}\" && echo ok"))
+            p.waitFor()
+            p.exitValue() == 0 && p.inputStream.bufferedReader().readText().contains("ok")
+        } catch (_: Exception) { false }
+    }
+    fun isConfigReady(context: Context, directoryUri: Uri?, method: String): Boolean {
+        return when (method) {
+            "shizuku" -> isShizukuFileExists()
+            "direct" -> isDirectFileExists()
+            else -> if (directoryUri != null) isSafFileExists(context, directoryUri) else false
+        }
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
     fun getBalatroGameDir(): File {
         return File(Environment.getExternalStorageDirectory(), BALATRO_GAME_PATH)

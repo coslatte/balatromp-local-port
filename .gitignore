@@ -9,3 +9,10 @@
 .cxx
 local.properties
 /app/build
+# Mod sources at repo root (keep embedded assets/mods/balatromp-mods.rar)
+-importante/
+smods/
+BalatroMultiplayer.zip
+SilkTouch.zip
+version.dll
+/balatromp-mods.rar

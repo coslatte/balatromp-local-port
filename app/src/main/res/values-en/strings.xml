@@ -1,7 +1,7 @@
 <resources>
     <!-- App -->
-    <string name="app_name">Balatro Bridge</string>
-    <string name="title">Balatro Native Bridge</string>
+    <string name="app_name">Balatro Port</string>
+    <string name="title">Balatro Port</string>
 
     <!-- Access -->
     <string name="access_method">Access: %1$s</string>
@@ -11,12 +11,12 @@
     <string name="access_none">No access</string>
 
     <!-- Folder selection -->
-    <string name="btn_select_folder">Select Balatro Game Folder</string>
-    <string name="folder_hint">Path: Android/data/com.playstack.balatro.android/files/save/game/</string>
-    <string name="btn_grant_full">Or grant full storage access</string>
-    <string name="hint_grant_desc">Skip folder selection (requires special permission)</string>
-    <string name="btn_grant_shizuku">Or use Shizuku (recommended)</string>
-    <string name="hint_shizuku_desc">Direct Android/data access without restrictions</string>
+    <string name="btn_select_folder">Choose game folder</string>
+    <string name="folder_hint">Only the first time — saved forever</string>
+    <string name="btn_grant_full">Grant full access</string>
+    <string name="hint_grant_desc">Skip folder search</string>
+    <string name="btn_grant_shizuku">Use Shizuku (recommended)</string>
+    <string name="hint_shizuku_desc">Easiest — no folder search</string>
 
     <!-- Modes -->
     <string name="radio_host">Host mode</string>
@@ -60,23 +60,56 @@
     <string name="server_stopped">Server stopped</string>
     <string name="how_it_works">How it works</string>
 
-    <!-- Manual -->
-    <string name="manual_what_title">What this app does</string>
-    <string name="manual_what_desc">Replaces Termux + Node.js. Starts a native Ktor server on your phone (port 8788) and automatically writes the IP into Multiplayer.jkr so Balatro connects over LAN without editing files manually.</string>
-    <string name="manual_flow_title">Host / Client flow</string>
-    <string name="manual_flow_host_title">Host</string>
-    <string name="manual_flow_host_desc">1) Enable hotspot on this phone. 2) Tap “Host &amp; Play” → starts server, injects http://YOUR_IP:8788 into Multiplayer.jkr and launches Balatro. 3) Inside Balatro Multiplayer create the lobby.</string>
-    <string name="manual_flow_client_title">Client</string>
-    <string name="manual_flow_client_desc">1) Connect to the host hotspot. 2) Enter host IP (e.g. 10.2.0.2) and tap “Join &amp; Play”. 3) Same URL is injected and Balatro launches. 4) In Balatro join the host lobby.</string>
-    <string name="manual_ip_title">Is 10.2.0.2 correct?</string>
-    <string name="manual_ip_desc">Yes. It is your ap0 (hotspot) interface IP. If this phone creates the hotspot and the other phone connects to it, put 10.2.0.2 in client mode. Both need the same multiplayer mod. Then in-game host creates lobby and client joins via room code.</string>
-    <string name="manual_network_title">Network requirements</string>
-    <string name="manual_network_desc">Same LAN/hotspot, same Balatro mod version, port 8788 free, and folder access granted (Shizuku recommended).</string>
-    <string name="manual_shizuku_title">Why Shizuku?</string>
-    <string name="manual_shizuku_desc">Android 11+ blocks Android/data. Shizuku grants ADB-level access without root. Once set up (install Shizuku, enable wireless debugging and authorize), the app writes Multiplayer.jkr without folder picker.</string>
-    <string name="manual_trouble_title">Common issues</string>
-    <string name="manual_trouble_desc">If it does not connect: check same network, correct IP (see “Your local IP”), host tapped first, port 8788 not blocked and same mod on both phones.</string>
+    <!-- Manual - direct & colloquial -->
+    <string name="manual_what_title">What does it do?</string>
+    <string name="manual_what_desc">Play Balatro with friends without Termux. The app starts the server and sets up Multiplayer.jkr for you. Just host or join.</string>
+    <string name="manual_flow_title">How to play</string>
+    <string name="manual_flow_host_title">You host</string>
+    <string name="manual_flow_host_desc">Hotspot on → “Host &amp; Play” → Balatro → create room.</string>
+    <string name="manual_flow_client_title">You join</string>
+    <string name="manual_flow_client_desc">Connect to hotspot → enter host IP (e.g. 10.2.0.2) → “Join &amp; Play” → join room in Balatro.</string>
+    <string name="manual_ip_title">Is 10.2.0.2 normal?</string>
+    <string name="manual_ip_desc">Yep. That is the hotspot IP. Copy it as-is on the other phone.</string>
+    <string name="manual_network_title">What you need</string>
+    <string name="manual_network_desc">Same network + same mod on both phones. That is it.</string>
+    <string name="manual_shizuku_title">Shizuku?</string>
+    <string name="manual_shizuku_desc">Permission to touch Android/data. One-time setup, 1 min and done.</string>
+    <string name="manual_trouble_title">Not connecting?</string>
+    <string name="manual_trouble_desc">Same network, same IP, host first, same mod. Check technical details if stuck.</string>
     <string name="manual_close">Got it</string>
     <string name="credit">Created by Gabriel Paz</string>
     <string name="credit_github_desc">Open creator GitHub</string>
+    <!-- Mods -->
+    <string name="mods_title">Bundled Mods</string>
+    <string name="mods_desc">Install Steamodded, Multiplayer and SilkTouch straight to the game folder. See https://docs.smods.dev</string>
+    <string name="mods_folder_label">Balatro folder (external)</string>
+    <string name="mods_folder_hint">Balatro/ASET/Mods — created after Lovely install</string>
+    <string name="mods_not_selected">Not selected</string>
+    <string name="mods_choose">Choose Balatro folder</string>
+    <string name="mods_install">Install</string>
+    <string name="mods_install_all">Install all</string>
+    <string name="mods_installed">Installed</string>
+    <string name="mods_not_installed">Not installed</string>
+    <string name="mods_install_success">Installed successfully</string>
+    <string name="mods_install_failed">Install failed</string>
+    <string name="mods_external_path">External path: Balatro/ASET/Mods</string>
+    <string name="mods_how">How: add Balatro as external storage in your file manager and pick that folder here. The app will create ASET/Mods and copy the mods.</string>
+    <string name="btn_details_show">Show technical details</string>
+    <string name="btn_details_hide">Hide details</string>
+    <string name="details_title">Technical details</string>
+    <string name="details_access">Access: %1$s</string>
+    <string name="details_ip">Local IP: %1$s</string>
+    <string name="details_server">Server: %1$s</string>
+    <string name="details_shizuku">Shizuku: %1$s</string>
+    <string name="details_storage">Storage: %1$s</string>
+    <string name="details_config">File: %1$s</string>
+    <string name="details_ok">Ready</string>
+    <string name="details_no">Unavailable</string>
+    <string name="details_granted">Granted</string>
+    <string name="details_denied">Denied</string>
+    <string name="details_active">Active</string>
+    <string name="details_inactive">Inactive</string>
+    <string name="details_verified">Verified — file found</string>
+    <string name="details_not_verified">Access granted, but Multiplayer.jkr not found. Open Balatro once to create it.</string>
+    <string name="details_checking">Checking…</string>
 </resources>
