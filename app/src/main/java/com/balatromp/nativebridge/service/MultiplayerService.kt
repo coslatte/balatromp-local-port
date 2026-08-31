@@ -5,10 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.lifecycleScope
 import com.balatromp.nativebridge.MainActivity
 import com.balatromp.nativebridge.R
 import io.ktor.server.application.*
@@ -23,29 +21,22 @@ import java.util.concurrent.*
 class MultiplayerService : LifecycleService() {
 
     private var server: ApplicationEngine? = null
-    private val CHANNEL_ID = "MultiplayerServiceChannel"
-
-    // Matchmaking logic state
     private val rooms = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        startForeground(1, createNotification("Server is starting..."))
+        startForeground(NOTIFICATION_ID, createNotification(getString(R.string.server_starting)))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        
-        if (server == null) {
-            startServer()
-        }
-        
+        if (server == null) startServer()
         return START_STICKY
     }
 
     private fun startServer() {
-        server = embeddedServer(CIO, port = 8788) {
+        server = embeddedServer(CIO, port = SERVER_PORT) {
             install(WebSockets)
             routing {
                 webSocket("/") {
@@ -53,51 +44,52 @@ class MultiplayerService : LifecycleService() {
                 }
             }
         }.start(wait = false)
-        
-        updateNotification("Server is running on port 8788")
+        updateNotification(getString(R.string.server_running_port, SERVER_PORT))
     }
 
+    // Basic protocol: JOIN:[ROOM_ID] or MSG:[CONTENT]
     private suspend fun handleConnection(session: DefaultWebSocketServerSession) {
         var currentRoom: String? = null
         try {
             for (frame in session.incoming) {
-                if (frame is Frame.Text) {
-                    val text = frame.readText()
-                    // Basic protocol: JOIN:[ROOM_ID] or MSG:[CONTENT]
-                    when {
-                        text.startsWith("JOIN:") -> {
-                            val roomId = text.substringAfter("JOIN:")
-                            currentRoom = roomId
-                            rooms.getOrPut(roomId) { ConcurrentHashMap.newKeySet() }.add(session)
-                        }
-                        text.startsWith("MSG:") -> {
-                            val msg = text.substringAfter("MSG:")
-                            currentRoom?.let { roomId ->
-                                rooms[roomId]?.forEach { otherSession ->
-                                    if (otherSession != session) {
-                                        otherSession.send("MSG:$msg")
-                                    }
-                                }
-                            }
-                        }
+                if (frame !is Frame.Text) continue
+                val text = frame.readText()
+                when {
+                    text.startsWith(PREFIX_JOIN) -> {
+                        val roomId = text.substringAfter(PREFIX_JOIN)
+                        currentRoom = roomId
+                        rooms.getOrPut(roomId) { ConcurrentHashMap.newKeySet() }.add(session)
                     }
+                    text.startsWith(PREFIX_MSG) -> relayToRoom(currentRoom, text.substringAfter(PREFIX_MSG), session)
                 }
             }
         } finally {
-            currentRoom?.let { rooms[it]?.remove(session) }
+            leaveRoom(currentRoom, session)
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val serviceChannel = NotificationChannel(
-                CHANNEL_ID,
-                "Multiplayer Server Channel",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(serviceChannel)
+    private suspend fun relayToRoom(roomId: String?, message: String, sender: DefaultWebSocketServerSession) {
+        if (roomId == null) return
+        rooms[roomId]?.forEach { other ->
+            if (other != sender) other.send(PREFIX_MSG + message)
         }
+    }
+
+    private fun leaveRoom(roomId: String?, session: DefaultWebSocketServerSession) {
+        if (roomId == null) return
+        val room = rooms[roomId] ?: return
+        room.remove(session)
+        if (room.isEmpty()) rooms.remove(roomId, room)
+    }
+
+    private fun createNotificationChannel() {
+        val serviceChannel = NotificationChannel(
+            CHANNEL_ID,
+            getString(R.string.notif_channel_name),
+            NotificationManager.IMPORTANCE_LOW
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(serviceChannel)
     }
 
     private fun createNotification(content: String): Notification {
@@ -108,7 +100,7 @@ class MultiplayerService : LifecycleService() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Balatro Multiplayer Server")
+            .setContentTitle(getString(R.string.notif_title))
             .setContentText(content)
             .setSmallIcon(android.R.drawable.stat_sys_download) // Placeholder icon
             .setContentIntent(pendingIntent)
@@ -117,11 +109,19 @@ class MultiplayerService : LifecycleService() {
 
     private fun updateNotification(content: String) {
         val manager = getSystemService(NotificationManager::class.java)
-        manager.notify(1, createNotification(content))
+        manager.notify(NOTIFICATION_ID, createNotification(content))
     }
 
     override fun onDestroy() {
         server?.stop(1000, 2000)
         super.onDestroy()
+    }
+
+    companion object {
+        const val SERVER_PORT = 8788
+        private const val NOTIFICATION_ID = 1
+        private const val CHANNEL_ID = "MultiplayerServiceChannel"
+        private const val PREFIX_JOIN = "JOIN:"
+        private const val PREFIX_MSG = "MSG:"
     }
 }

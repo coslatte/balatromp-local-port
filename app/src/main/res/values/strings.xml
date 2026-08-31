@@ -1,10 +1,8 @@
 <resources>
     <!-- App -->
     <string name="app_name">Balatro Port</string>
-    <string name="title">Balatro Port</string>
 
     <!-- Access -->
-    <string name="access_method">Acceso: %1$s</string>
     <string name="access_saf">SAF</string>
     <string name="access_direct">Directo</string>
     <string name="access_shizuku">Shizuku</string>
@@ -22,18 +20,15 @@
     <string name="radio_host">Modo anfitrión</string>
     <string name="radio_client">Modo cliente</string>
     <string name="label_host_ip">IP del anfitrión</string>
-    <string name="label_local_ip">Tu IP local: %1$s</string>
 
     <!-- Actions -->
     <string name="btn_host_play">Crear y jugar</string>
     <string name="btn_join_play">Unirse y jugar</string>
     <string name="btn_change_folder">Cambiar carpeta</string>
-    <string name="btn_grant_storage">Conceder acceso</string>
     <string name="btn_shizuku_setup">Configurar Shizuku</string>
 
     <!-- Messages -->
     <string name="error_invalid_ip">IP no válida</string>
-    <string name="error_config_failed">Error al actualizar Multiplayer.jkr</string>
     <string name="error_balatro_not_found">¡Balatro no encontrado!</string>
     <string name="toast_storage_granted">Acceso concedido</string>
     <string name="toast_shizuku_granted">Permiso de Shizuku concedido</string>
@@ -49,15 +44,12 @@
     <string name="option_b_desc">Instala Shizuku desde Play Store, activa depuración inalámbrica y concede el permiso.</string>
     <string name="option_c_title">Opción C: usar ADB desde PC</string>
     <string name="option_c_desc">Conecta el móvil y ejecuta:\n adb push Multiplayer.jkr /sdcard/Android/data/com.playstack.balatro.android/files/save/game/</string>
-    <string name="server_url_value"> [\"server_url\"] = \"%1$s\"</string>
     <string name="btn_grant">Permitir acceso</string>
     <string name="btn_close">Cerrar</string>
     <string name="btn_help">Ayuda</string>
     <string name="btn_manual">Manual</string>
     <string name="btn_copy">Copiar</string>
     <string name="copied">Copiado</string>
-    <string name="server_running">Servidor activo en %1$s</string>
-    <string name="server_stopped">Servidor detenido</string>
     <string name="how_it_works">Cómo funciona</string>
 
     <!-- Manual - directo y coloquial -->
@@ -79,17 +71,16 @@
     <string name="manual_close">Entendido</string>
     <string name="credit">Creado por Gabriel Paz</string>
     <string name="credit_github_desc">Abrir GitHub del creador</string>
+
     <!-- Mods -->
     <string name="mods_title">Mods incluidos</string>
     <string name="mods_desc">Instala Steamodded, Multiplayer y SilkTouch directo a la carpeta del juego. Sigue los pasos de https://docs.smods.dev</string>
     <string name="mods_folder_label">Carpeta Balatro (externa)</string>
-    <string name="mods_folder_hint">Balatro/ASET/Mods — se crea al instalar vía Lovely</string>
     <string name="mods_not_selected">No seleccionada</string>
     <string name="mods_choose">Elegir carpeta Balatro</string>
     <string name="mods_install">Instalar</string>
     <string name="mods_install_all">Instalar todos</string>
     <string name="mods_installed">Instalado</string>
-    <string name="mods_not_installed">No instalado</string>
     <string name="mods_install_success">Instalado correctamente</string>
     <string name="mods_install_failed">Error al instalar</string>
     <string name="mods_external_path">Ruta externa: Balatro/ASET/Mods</string>
@@ -107,9 +98,15 @@
     <string name="details_no">No disponible</string>
     <string name="details_granted">Concedido</string>
     <string name="details_denied">Denegado</string>
-    <string name="details_active">Activo</string>
     <string name="details_inactive">Inactivo</string>
     <string name="details_verified">Verificado — archivo encontrado</string>
     <string name="details_not_verified">Acceso concedido, pero no se encontró Multiplayer.jkr. Abre Balatro una vez para que se cree.</string>
     <string name="details_checking">Verificando…</string>
+
+    <!-- Service -->
+    <string name="notif_channel_name">Canal del servidor multijugador</string>
+    <string name="notif_title">Servidor multijugador de Balatro</string>
+    <string name="server_starting">Iniciando servidor…</string>
+    <string name="server_running_port">Servidor activo en el puerto %1$d</string>
+    <string name="host_port">puerto %1$d</string>
 </resources>

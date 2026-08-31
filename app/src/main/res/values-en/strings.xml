@@ -1,10 +1,8 @@
 <resources>
     <!-- App -->
     <string name="app_name">Balatro Port</string>
-    <string name="title">Balatro Port</string>
 
     <!-- Access -->
-    <string name="access_method">Access: %1$s</string>
     <string name="access_saf">SAF</string>
     <string name="access_direct">Direct</string>
     <string name="access_shizuku">Shizuku</string>
@@ -22,18 +20,15 @@
     <string name="radio_host">Host mode</string>
     <string name="radio_client">Client mode</string>
     <string name="label_host_ip">Host IP address</string>
-    <string name="label_local_ip">Your local IP: %1$s</string>
 
     <!-- Actions -->
     <string name="btn_host_play">Host &amp; Play</string>
     <string name="btn_join_play">Join &amp; Play</string>
     <string name="btn_change_folder">Change folder</string>
-    <string name="btn_grant_storage">Grant access</string>
     <string name="btn_shizuku_setup">Setup Shizuku</string>
 
     <!-- Messages -->
     <string name="error_invalid_ip">Invalid IP address</string>
-    <string name="error_config_failed">Failed to update Multiplayer.jkr</string>
     <string name="error_balatro_not_found">Balatro not found!</string>
     <string name="toast_storage_granted">Access granted</string>
     <string name="toast_shizuku_granted">Shizuku permission granted</string>
@@ -49,15 +44,12 @@
     <string name="option_b_desc">Install Shizuku from Play Store, enable wireless debugging and grant permission.</string>
     <string name="option_c_title">Option C: use ADB from PC</string>
     <string name="option_c_desc">Connect your phone and run:\n adb push Multiplayer.jkr /sdcard/Android/data/com.playstack.balatro.android/files/save/game/</string>
-    <string name="server_url_value"> [\"server_url\"] = \"%1$s\"</string>
     <string name="btn_grant">Allow access</string>
     <string name="btn_close">Close</string>
     <string name="btn_help">Help</string>
     <string name="btn_manual">Guide</string>
     <string name="btn_copy">Copy</string>
     <string name="copied">Copied</string>
-    <string name="server_running">Server running at %1$s</string>
-    <string name="server_stopped">Server stopped</string>
     <string name="how_it_works">How it works</string>
 
     <!-- Manual - direct & colloquial -->
@@ -79,23 +71,22 @@
     <string name="manual_close">Got it</string>
     <string name="credit">Created by Gabriel Paz</string>
     <string name="credit_github_desc">Open creator GitHub</string>
+
     <!-- Mods -->
     <string name="mods_title">Bundled Mods</string>
     <string name="mods_desc">Install Steamodded, Multiplayer and SilkTouch straight to the game folder. See https://docs.smods.dev</string>
     <string name="mods_folder_label">Balatro folder (external)</string>
-    <string name="mods_folder_hint">Balatro/ASET/Mods — created after Lovely install</string>
     <string name="mods_not_selected">Not selected</string>
     <string name="mods_choose">Choose Balatro folder</string>
     <string name="mods_install">Install</string>
     <string name="mods_install_all">Install all</string>
     <string name="mods_installed">Installed</string>
-    <string name="mods_not_installed">Not installed</string>
     <string name="mods_install_success">Installed successfully</string>
     <string name="mods_install_failed">Install failed</string>
     <string name="mods_external_path">External path: Balatro/ASET/Mods</string>
     <string name="mods_how">How: add Balatro as external storage in your file manager and pick that folder here. The app will create ASET/Mods and copy the mods.</string>
     <string name="btn_details_show">Show technical details</string>
-    <string name="btn_details_hide">Hide details</string>
+    <string name="btn_details_hide">Hide technical details</string>
     <string name="details_title">Technical details</string>
     <string name="details_access">Access: %1$s</string>
     <string name="details_ip">Local IP: %1$s</string>
@@ -107,9 +98,15 @@
     <string name="details_no">Unavailable</string>
     <string name="details_granted">Granted</string>
     <string name="details_denied">Denied</string>
-    <string name="details_active">Active</string>
     <string name="details_inactive">Inactive</string>
     <string name="details_verified">Verified — file found</string>
     <string name="details_not_verified">Access granted, but Multiplayer.jkr not found. Open Balatro once to create it.</string>
     <string name="details_checking">Checking…</string>
+
+    <!-- Service -->
+    <string name="notif_channel_name">Multiplayer server channel</string>
+    <string name="notif_title">Balatro Multiplayer Server</string>
+    <string name="server_starting">Starting server…</string>
+    <string name="server_running_port">Server running on port %1$d</string>
+    <string name="host_port">port %1$d</string>
 </resources>
